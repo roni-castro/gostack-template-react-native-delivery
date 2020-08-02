@@ -10,6 +10,7 @@ import { Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useFavoriteFood } from '../../hooks/favorite-context';
 import formatValue from '../../utils/formatValue';
 import {
   Container,
@@ -74,6 +75,7 @@ const FoodDetails: React.FC = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [foodQuantity, setFoodQuantity] = useState(1);
   const [hasFinishedOrder, setHasFinishedOrder] = useState(false);
+  const { addFavoriteFood, removeFavoriteFood } = useFavoriteFood();
 
   const navigation = useNavigation();
   const route = useRoute();
@@ -154,11 +156,13 @@ const FoodDetails: React.FC = () => {
   const toggleFavorite = useCallback(() => {
     if (isFavorite) {
       unmarkFavoriteFood(food.id);
+      removeFavoriteFood(food.id);
     } else {
       markFavoriteFood(food);
+      addFavoriteFood(food);
     }
     setIsFavorite(!isFavorite);
-  }, [isFavorite, food]);
+  }, [isFavorite, food, removeFavoriteFood, addFavoriteFood]);
 
   const cartTotal = useMemo(() => {
     const totalExtra = extras

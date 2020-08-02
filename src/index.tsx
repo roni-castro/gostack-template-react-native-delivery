@@ -3,6 +3,7 @@ import React from 'react';
 import { View, StatusBar } from 'react-native';
 
 import Routes from './routes';
+import AppProvider from './hooks/AppProvider';
 
 const App: React.FC = () => (
   <View style={{ flex: 1 }}>
@@ -11,7 +12,9 @@ const App: React.FC = () => (
       backgroundColor="transparent"
       translucent
     />
-    <Routes />
+    <AppProvider>
+      <Routes />
+    </AppProvider>
   </View>
 );
 

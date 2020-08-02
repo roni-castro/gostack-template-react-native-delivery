@@ -17,7 +17,7 @@ import {
   FoodDescription,
   FoodPricing,
 } from './styles';
-import { FoodData } from '../../services/models/food';
+import { useFavoriteFood } from '../../hooks/favorite-context';
 
 interface Food {
   id: number;
@@ -29,34 +29,18 @@ interface Food {
 }
 
 const Favorites: React.FC = () => {
-  const [favorites, setFavorites] = useState<Food[]>([]);
+  const { favoriteFoods, fetchFavorites } = useFavoriteFood();
   const [refreshing, setRefreshing] = useState(false);
-
-  function mapFoodsDataToFoods(foodsData: FoodData[]): Food[] {
-    return foodsData.map(
-      foodData =>
-        ({
-          ...foodData,
-          formattedPrice: formatValue(foodData.price),
-        } as Food),
-    );
-  }
-
-  const loadFavorites = useCallback(async (): Promise<void> => {
-    const favoritesFoodData = await fetchFavoriteFoods();
-    const favoritesFood = mapFoodsDataToFoods(favoritesFoodData);
-    setFavorites(favoritesFood);
-  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadFavorites();
+    await fetchFavorites();
     setRefreshing(false);
-  }, [loadFavorites]);
+  }, [fetchFavorites]);
 
   useEffect(() => {
-    loadFavorites();
-  }, [loadFavorites]);
+    fetchFavorites();
+  }, [fetchFavorites]);
 
   return (
     <Container>
@@ -66,7 +50,7 @@ const Favorites: React.FC = () => {
 
       <FoodsContainer>
         <FoodList
-          data={favorites}
+          data={favoriteFoods}
           keyExtractor={item => String(item.id)}
           onRefresh={onRefresh}
           refreshing={refreshing}
