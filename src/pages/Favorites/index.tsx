@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Image } from 'react-native';
 
-import api from '../../services/api';
+import { fetchFavoriteFoods } from '../../services/food/favorite';
 import formatValue from '../../utils/formatValue';
 
 import {
@@ -17,6 +17,7 @@ import {
   FoodDescription,
   FoodPricing,
 } from './styles';
+import { FoodData } from '../../services/models/food';
 
 interface Food {
   id: number;
@@ -31,8 +32,19 @@ const Favorites: React.FC = () => {
   const [favorites, setFavorites] = useState<Food[]>([]);
 
   useEffect(() => {
+    function mapFoodsDataToFoods(foodsData: FoodData[]): Food[] {
+      return foodsData.map(
+        foodData =>
+          ({
+            ...foodData,
+            formattedPrice: formatValue(foodData.price),
+          } as Food),
+      );
+    }
     async function loadFavorites(): Promise<void> {
-      // Load favorite foods from api
+      const favoritesFoodData = await fetchFavoriteFoods();
+      const favoritesFood = mapFoodsDataToFoods(favoritesFoodData);
+      setFavorites(favoritesFood);
     }
 
     loadFavorites();
