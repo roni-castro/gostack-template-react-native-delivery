@@ -11,7 +11,6 @@ import Icon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import formatValue from '../../utils/formatValue';
-
 import {
   Container,
   Header,
@@ -38,12 +37,14 @@ import {
 } from './styles';
 import { findFoodById } from '../../services/food/searchFoods';
 import { FoodData } from '../../services/models/food';
+import { createOrder } from '../../services/order/orders';
 import copyDeep from '../../utils/copyDeep';
 import { multDecimal, sumDecimal } from '../../utils/operations';
 import {
   unmarkFavoriteFood,
   markFavoriteFood,
 } from '../../services/food/favorite';
+import OrderFinished from './OrderFinished';
 
 interface Params {
   id: number;
@@ -72,6 +73,7 @@ const FoodDetails: React.FC = () => {
   const [extras, setExtras] = useState<Extra[]>([]);
   const [isFavorite, setIsFavorite] = useState(false);
   const [foodQuantity, setFoodQuantity] = useState(1);
+  const [hasFinishedOrder, setHasFinishedOrder] = useState(false);
 
   const navigation = useNavigation();
   const route = useRoute();
@@ -102,6 +104,20 @@ const FoodDetails: React.FC = () => {
 
     loadFood();
   }, [routeParams]);
+
+  useEffect(() => {
+    let timeoutCallback: NodeJS.Timeout;
+    async function goBack(): Promise<void> {
+      if (hasFinishedOrder) {
+        timeoutCallback = setTimeout(() => {
+          navigation.goBack();
+        }, 2000);
+      }
+    }
+    goBack();
+
+    return () => clearTimeout(timeoutCallback);
+  }, [navigation, hasFinishedOrder]);
 
   function handleIncrementExtra(id: number): void {
     const foodExtraIndex = extras.findIndex(extra => extra.id === id);
@@ -153,7 +169,14 @@ const FoodDetails: React.FC = () => {
   }, [extras, food, foodQuantity]);
 
   async function handleFinishOrder(): Promise<void> {
-    // Finish the order and save on the API
+    const data = {
+      ...food,
+      id: undefined,
+      quantity: foodQuantity,
+      extras,
+    };
+    await createOrder(data);
+    setHasFinishedOrder(true);
   }
 
   // Calculate the correct icon name
@@ -178,6 +201,7 @@ const FoodDetails: React.FC = () => {
 
   return (
     <Container>
+      {hasFinishedOrder && <OrderFinished />}
       <Header />
 
       <ScrollContainer>

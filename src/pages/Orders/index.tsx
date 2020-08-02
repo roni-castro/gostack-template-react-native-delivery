@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Image } from 'react-native';
 
-import api from '../../services/api';
+import { fetchOrders } from '../../services/order/orders';
 import formatValue from '../../utils/formatValue';
 
 import {
@@ -17,13 +17,14 @@ import {
   FoodDescription,
   FoodPricing,
 } from './styles';
+import { OrderData } from '../../services/models/order';
 
 interface Food {
   id: number;
   name: string;
   description: string;
   price: number;
-  formattedValue: number;
+  formattedPrice: string;
   thumbnail_url: string;
 }
 
@@ -31,8 +32,19 @@ const Orders: React.FC = () => {
   const [orders, setOrders] = useState<Food[]>([]);
 
   useEffect(() => {
+    function mapOrdersDataToFoods(ordersData: OrderData[]): Food[] {
+      return ordersData.map(
+        orderData =>
+          ({
+            ...orderData,
+            formattedPrice: formatValue(orderData.price),
+          } as Food),
+      );
+    }
     async function loadOrders(): Promise<void> {
-      // Load orders from API
+      const ordersData = await fetchOrders();
+      const foods = mapOrdersDataToFoods(ordersData);
+      setOrders(foods);
     }
 
     loadOrders();
