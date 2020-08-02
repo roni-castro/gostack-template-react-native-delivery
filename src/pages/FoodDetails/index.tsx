@@ -38,6 +38,10 @@ import {
   ButtonText,
   IconContainer,
 } from './styles';
+import { findFoodById } from '../../services/food/searchFoods';
+import { FoodData } from '../../services/models/food';
+import copyDeep from '../../utils/copyDeep';
+import { multDecimal, sumDecimal } from '../../utils/operations';
 
 interface Params {
   id: number;
@@ -72,27 +76,59 @@ const FoodDetails: React.FC = () => {
   const routeParams = route.params as Params;
 
   useEffect(() => {
+    function mapFoodDataToFood(foodData: FoodData): Food {
+      return {
+        ...foodData,
+        formattedPrice: formatValue(foodData.price),
+        extras: foodData.extras.map(foodExtra => ({
+          ...foodExtra,
+          quantity: 0,
+        })),
+      };
+    }
+
     async function loadFood(): Promise<void> {
-      // Load a specific food with extras based on routeParams id
+      const { id } = routeParams;
+      const foodData = await findFoodById(id);
+      const foodMapped = mapFoodDataToFood(foodData);
+      const foodExtras = foodMapped.extras;
+      setFood(foodMapped);
+      setExtras(foodExtras);
     }
 
     loadFood();
   }, [routeParams]);
 
   function handleIncrementExtra(id: number): void {
-    // Increment extra quantity
+    const foodExtraIndex = extras.findIndex(extra => extra.id === id);
+    const extraFound = copyDeep<Extra>(extras[foodExtraIndex]);
+    if (extraFound) {
+      const extrasCopy = [...extras];
+      extraFound.quantity += 1;
+      extrasCopy.splice(foodExtraIndex, 1, extraFound);
+      setExtras(extrasCopy);
+    }
   }
 
   function handleDecrementExtra(id: number): void {
-    // Decrement extra quantity
+    const foodExtraIndex = extras.findIndex(extra => extra.id === id);
+    const extraFound = copyDeep<Extra>(extras[foodExtraIndex]);
+    if (extraFound && extraFound.quantity > 0) {
+      const extrasCopy = [...extras];
+      extraFound.quantity -= 1;
+      extrasCopy.splice(foodExtraIndex, 1, extraFound);
+      setExtras(extrasCopy);
+    }
   }
 
   function handleIncrementFood(): void {
-    // Increment food quantity
+    setFoodQuantity(prevQuantity => prevQuantity + 1);
   }
 
   function handleDecrementFood(): void {
-    // Decrement food quantity
+    if (foodQuantity > 1) {
+      setFoodQuantity(prevQuantity => prevQuantity - 1);
+    }
   }
 
   const toggleFavorite = useCallback(() => {
@@ -100,7 +136,11 @@ const FoodDetails: React.FC = () => {
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {
-    // Calculate cartTotal
+    const totalExtra = extras
+      .map(extra => multDecimal(extra.quantity, extra.value))
+      .reduce((prevValue, curValue) => sumDecimal(prevValue, curValue), 0.0);
+    const total = sumDecimal(multDecimal(foodQuantity, food.price), totalExtra);
+    return formatValue(total);
   }, [extras, food, foodQuantity]);
 
   async function handleFinishOrder(): Promise<void> {
