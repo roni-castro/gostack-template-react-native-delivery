@@ -11,7 +11,7 @@ export const searchFood = async ({
   name,
 }: SearchFoodParams): Promise<FoodData[]> => {
   const response = await api.get<FoodData[]>('/foods', {
-    params: { category, name_like: name },
+    params: { category_like: category, name_like: name },
   });
   return response.data;
 };
