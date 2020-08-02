@@ -6,12 +6,17 @@ interface SearchFoodParams {
   name?: string;
 }
 
-export const searchFood = async ({
+export const searchFoods = async ({
   category,
   name,
 }: SearchFoodParams): Promise<FoodData[]> => {
   const response = await api.get<FoodData[]>('/foods', {
     params: { category_like: category, name_like: name },
   });
+  return response.data;
+};
+
+export const findFoodById = async (id: number): Promise<FoodData> => {
+  const response = await api.get<FoodData>(`/foods/${id}`);
   return response.data;
 };

@@ -26,7 +26,7 @@ import {
   FoodDescription,
   FoodPricing,
 } from './styles';
-import { searchFood } from '../../services/food/searchFoods';
+import { searchFoods } from '../../services/food/searchFoods';
 import { fetchCategories } from '../../services/category/categories';
 import { FoodData } from '../../services/models/food';
 
@@ -71,7 +71,7 @@ const Dashboard: React.FC = () => {
     }
 
     async function loadFoods(): Promise<void> {
-      const foodsData = await searchFood({
+      const foodsData = await searchFoods({
         category: selectedCategory,
         name: searchValue,
       });
