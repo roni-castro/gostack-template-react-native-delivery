@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Image } from 'react-native';
 
 import { fetchFavoriteFoods } from '../../services/food/favorite';
@@ -30,25 +30,33 @@ interface Food {
 
 const Favorites: React.FC = () => {
   const [favorites, setFavorites] = useState<Food[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  function mapFoodsDataToFoods(foodsData: FoodData[]): Food[] {
+    return foodsData.map(
+      foodData =>
+        ({
+          ...foodData,
+          formattedPrice: formatValue(foodData.price),
+        } as Food),
+    );
+  }
+
+  const loadFavorites = useCallback(async (): Promise<void> => {
+    const favoritesFoodData = await fetchFavoriteFoods();
+    const favoritesFood = mapFoodsDataToFoods(favoritesFoodData);
+    setFavorites(favoritesFood);
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadFavorites();
+    setRefreshing(false);
+  }, [loadFavorites]);
 
   useEffect(() => {
-    function mapFoodsDataToFoods(foodsData: FoodData[]): Food[] {
-      return foodsData.map(
-        foodData =>
-          ({
-            ...foodData,
-            formattedPrice: formatValue(foodData.price),
-          } as Food),
-      );
-    }
-    async function loadFavorites(): Promise<void> {
-      const favoritesFoodData = await fetchFavoriteFoods();
-      const favoritesFood = mapFoodsDataToFoods(favoritesFoodData);
-      setFavorites(favoritesFood);
-    }
-
     loadFavorites();
-  }, []);
+  }, [loadFavorites]);
 
   return (
     <Container>
@@ -60,6 +68,8 @@ const Favorites: React.FC = () => {
         <FoodList
           data={favorites}
           keyExtractor={item => String(item.id)}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
           renderItem={({ item }) => (
             <Food activeOpacity={0.6}>
               <FoodImageContainer>

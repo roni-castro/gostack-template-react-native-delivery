@@ -12,8 +12,6 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import formatValue from '../../utils/formatValue';
 
-import api from '../../services/api';
-
 import {
   Container,
   Header,
@@ -42,6 +40,10 @@ import { findFoodById } from '../../services/food/searchFoods';
 import { FoodData } from '../../services/models/food';
 import copyDeep from '../../utils/copyDeep';
 import { multDecimal, sumDecimal } from '../../utils/operations';
+import {
+  unmarkFavoriteFood,
+  markFavoriteFood,
+} from '../../services/food/favorite';
 
 interface Params {
   id: number;
@@ -60,6 +62,7 @@ interface Food {
   description: string;
   price: number;
   image_url: string;
+  thumbnail_url: string;
   formattedPrice: string;
   extras: Extra[];
 }
@@ -89,11 +92,12 @@ const FoodDetails: React.FC = () => {
 
     async function loadFood(): Promise<void> {
       const { id } = routeParams;
-      const foodData = await findFoodById(id);
-      const foodMapped = mapFoodDataToFood(foodData);
+      const response = await findFoodById(id);
+      const foodMapped = mapFoodDataToFood(response.foodData);
       const foodExtras = foodMapped.extras;
       setFood(foodMapped);
       setExtras(foodExtras);
+      setIsFavorite(response.isFavoriteFood);
     }
 
     loadFood();
@@ -132,7 +136,12 @@ const FoodDetails: React.FC = () => {
   }
 
   const toggleFavorite = useCallback(() => {
-    // Toggle if food is favorite or not
+    if (isFavorite) {
+      unmarkFavoriteFood(food.id);
+    } else {
+      markFavoriteFood(food);
+    }
+    setIsFavorite(!isFavorite);
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {

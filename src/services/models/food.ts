@@ -3,6 +3,12 @@ export interface FoodExtraData {
   name: string;
   value: number;
 }
+
+export interface FoodDetailsData {
+  foodData: FoodData;
+  isFavoriteFood: boolean;
+}
+
 export interface FoodData {
   id: number;
   name: string;

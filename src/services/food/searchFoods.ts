@@ -1,5 +1,5 @@
 import api from '../api';
-import { FoodData } from '../models/food';
+import { FoodData, FoodDetailsData } from '../models/food';
 
 interface SearchFoodParams {
   category?: number;
@@ -16,7 +16,21 @@ export const searchFoods = async ({
   return response.data;
 };
 
-export const findFoodById = async (id: number): Promise<FoodData> => {
+export const findFoodById = async (id: number): Promise<FoodDetailsData> => {
   const response = await api.get<FoodData>(`/foods/${id}`);
-  return response.data;
+  try {
+    await api.get<FoodData>(`/favorites/${id}`);
+    return {
+      foodData: response.data,
+      isFavoriteFood: true,
+    };
+  } catch (error) {
+    if (error.response.status === 404) {
+      return {
+        foodData: response.data,
+        isFavoriteFood: false,
+      };
+    }
+    throw error;
+  }
 };
