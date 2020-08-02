@@ -6,7 +6,6 @@ import { useNavigation } from '@react-navigation/native';
 import Logo from '../../assets/logo-header.png';
 import SearchInput from '../../components/SearchInput';
 
-import api from '../../services/api';
 import formatValue from '../../utils/formatValue';
 
 import {
@@ -27,6 +26,9 @@ import {
   FoodDescription,
   FoodPricing,
 } from './styles';
+import { searchFood } from '../../services/food/searchFoods';
+import { fetchCategories } from '../../services/category/categories';
+import { FoodData } from '../../services/models/food';
 
 interface Food {
   id: number;
@@ -54,12 +56,24 @@ const Dashboard: React.FC = () => {
   const navigation = useNavigation();
 
   async function handleNavigate(id: number): Promise<void> {
-    // Navigate do ProductDetails page
+    navigation.navigate('FoodDetails', { id });
   }
 
   useEffect(() => {
+    function mapFoodDataToFood(foodsData: FoodData[]): Food[] {
+      return foodsData.map(
+        foodData =>
+          ({
+            ...foodData,
+            formattedPrice: formatValue(foodData.price),
+          } as Food),
+      );
+    }
+
     async function loadFoods(): Promise<void> {
-      // Load Foods from API
+      const foodsData = await searchFood({ category: selectedCategory });
+      const foodsLoaded = mapFoodDataToFood(foodsData);
+      setFoods(foodsLoaded);
     }
 
     loadFoods();
@@ -67,14 +81,16 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     async function loadCategories(): Promise<void> {
-      // Load categories from API
+      const categoriesData = await fetchCategories();
+      setCategories(categoriesData);
     }
 
     loadCategories();
   }, []);
 
   function handleSelectCategory(id: number): void {
-    // Select / deselect category
+    const isCategoryAlreadySelected = id === selectedCategory;
+    setSelectedCategory(isCategoryAlreadySelected ? undefined : id);
   }
 
   return (
