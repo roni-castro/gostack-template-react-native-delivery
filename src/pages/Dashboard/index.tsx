@@ -71,7 +71,10 @@ const Dashboard: React.FC = () => {
     }
 
     async function loadFoods(): Promise<void> {
-      const foodsData = await searchFood({ category: selectedCategory });
+      const foodsData = await searchFood({
+        category: selectedCategory,
+        name: searchValue,
+      });
       const foodsLoaded = mapFoodDataToFood(foodsData);
       setFoods(foodsLoaded);
     }
