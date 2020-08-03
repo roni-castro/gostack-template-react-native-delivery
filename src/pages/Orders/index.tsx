@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Image } from 'react-native';
-
-import { fetchOrders } from '../../services/order/orders';
-import formatValue from '../../utils/formatValue';
 
 import {
   Container,
@@ -17,7 +14,7 @@ import {
   FoodDescription,
   FoodPricing,
 } from './styles';
-import { OrderData } from '../../services/models/order';
+import { useOrder } from '../../hooks/order-context';
 
 interface Food {
   id: number;
@@ -29,26 +26,14 @@ interface Food {
 }
 
 const Orders: React.FC = () => {
-  const [orders, setOrders] = useState<Food[]>([]);
+  const { orders, getOrders } = useOrder();
 
   useEffect(() => {
-    function mapOrdersDataToFoods(ordersData: OrderData[]): Food[] {
-      return ordersData.map(
-        orderData =>
-          ({
-            ...orderData,
-            formattedPrice: formatValue(orderData.price),
-          } as Food),
-      );
-    }
     async function loadOrders(): Promise<void> {
-      const ordersData = await fetchOrders();
-      const foods = mapOrdersDataToFoods(ordersData);
-      setOrders(foods);
+      await getOrders();
     }
-
     loadOrders();
-  }, []);
+  }, [getOrders]);
 
   return (
     <Container>

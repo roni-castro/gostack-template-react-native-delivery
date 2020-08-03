@@ -16,9 +16,7 @@ export const fetchOrders = async (): Promise<OrderData[]> => {
   return response.data;
 };
 
-export const createOrder = async (
-  data: CreateOrderDTO,
-): Promise<OrderData[]> => {
-  const response = await api.post<OrderData[]>('/orders', data);
+export const createOrder = async (data: CreateOrderDTO): Promise<OrderData> => {
+  const response = await api.post<OrderData>('/orders', data);
   return response.data;
 };

@@ -38,7 +38,7 @@ import {
 } from './styles';
 import { findFoodById } from '../../services/food/searchFoods';
 import { FoodData } from '../../services/models/food';
-import { createOrder } from '../../services/order/orders';
+import { useOrder } from '../../hooks/order-context';
 import copyDeep from '../../utils/copyDeep';
 import { multDecimal, sumDecimal } from '../../utils/operations';
 import {
@@ -76,6 +76,7 @@ const FoodDetails: React.FC = () => {
   const [foodQuantity, setFoodQuantity] = useState(1);
   const [hasFinishedOrder, setHasFinishedOrder] = useState(false);
   const { addFavoriteFood, removeFavoriteFood } = useFavoriteFood();
+  const { createNewOrder } = useOrder();
 
   const navigation = useNavigation();
   const route = useRoute();
@@ -179,7 +180,7 @@ const FoodDetails: React.FC = () => {
       quantity: foodQuantity,
       extras,
     };
-    await createOrder(data);
+    await createNewOrder(data);
     setHasFinishedOrder(true);
   }
 
