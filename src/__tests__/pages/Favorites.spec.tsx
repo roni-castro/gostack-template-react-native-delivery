@@ -2,6 +2,7 @@ import React from 'react';
 
 import { render, wait } from '@testing-library/react-native';
 import AxiosMock from 'axios-mock-adapter';
+import { FavoriteFoodProvider } from '../../hooks/favorite-context';
 import api from '../../services/api';
 
 import Favorites from '../../pages/Favorites';
@@ -69,7 +70,11 @@ describe('Favorites', () => {
 
     apiMock.onGet('/favorites').reply(200, items);
 
-    const { getByText } = render(<Favorites />);
+    const { getByText } = render(
+      <FavoriteFoodProvider>
+        <Favorites />
+      </FavoriteFoodProvider>,
+    );
 
     await wait(() => expect(getByText('Ao molho')).toBeTruthy(), {
       timeout: 200,
